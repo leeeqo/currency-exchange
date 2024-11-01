@@ -4,7 +4,11 @@ REST API for describing currencies and exchange rates.
 
 Tech Task: https://zhukovsd.github.io/java-backend-learning-course/projects/currency-exchange/
 
-Tech Task Author: https://github.com/zhukovsd
+### ToDo:
+
+- Service layer
+- Exception handling
+- Tests
 
 ### Stack:
 
