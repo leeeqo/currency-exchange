@@ -1,7 +1,7 @@
 package com.oli.repository.impl;
 
 import com.oli.entity.Currency;
-import com.oli.repository.CrudRepository;
+import com.oli.repository.CruRepository;
 import com.oli.repository.DataSourceRepository;
 
 import javax.sql.DataSource;
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CurrencyRepository extends DataSourceRepository implements CrudRepository<Currency> {
+public class CurrencyRepository extends DataSourceRepository implements CruRepository<Currency> {
 
     public CurrencyRepository(DataSource dataSource) {
         super(dataSource);

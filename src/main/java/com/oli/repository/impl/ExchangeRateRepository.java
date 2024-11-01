@@ -2,7 +2,7 @@ package com.oli.repository.impl;
 
 import com.oli.entity.Currency;
 import com.oli.entity.ExchangeRate;
-import com.oli.repository.CrudRepository;
+import com.oli.repository.CruRepository;
 import com.oli.repository.DataSourceRepository;
 
 import javax.sql.DataSource;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ExchangeRateRepository extends DataSourceRepository implements CrudRepository<ExchangeRate> {
+public class ExchangeRateRepository extends DataSourceRepository implements CruRepository<ExchangeRate> {
 
     private static final String BASE_CURRENCY_FIELDS = "c_base.id AS base_id, c_base.code AS base_code, " +
             "c_base.fullname AS base_fullname, c_base.sign AS base_sign";
