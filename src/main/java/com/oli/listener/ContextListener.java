@@ -1,7 +1,7 @@
 package com.oli.listener;
 
-import com.oli.repository.CurrencyRepository;
-import com.oli.repository.ExchangeRateRepository;
+import com.oli.repository.impl.CurrencyRepository;
+import com.oli.repository.impl.ExchangeRateRepository;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;

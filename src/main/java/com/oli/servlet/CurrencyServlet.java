@@ -2,9 +2,8 @@ package com.oli.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oli.entity.Currency;
-import com.oli.repository.CurrencyRepository;
+import com.oli.repository.impl.CurrencyRepository;
 import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

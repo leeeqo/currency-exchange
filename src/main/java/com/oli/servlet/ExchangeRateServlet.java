@@ -3,7 +3,7 @@ package com.oli.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oli.dto.ExchangeRateRequest;
 import com.oli.entity.ExchangeRate;
-import com.oli.repository.ExchangeRateRepository;
+import com.oli.repository.impl.ExchangeRateRepository;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

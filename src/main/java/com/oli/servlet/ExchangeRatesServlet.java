@@ -3,8 +3,8 @@ package com.oli.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oli.dto.ExchangeRateRequest;
 import com.oli.entity.ExchangeRate;
-import com.oli.repository.CurrencyRepository;
-import com.oli.repository.ExchangeRateRepository;
+import com.oli.repository.impl.CurrencyRepository;
+import com.oli.repository.impl.ExchangeRateRepository;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
-import static com.oli.repository.ExchangeRateRepository.INVALID_CURRENCY_CODE;
+import static com.oli.repository.impl.ExchangeRateRepository.INVALID_CURRENCY_CODE;
 
 @WebServlet(name = "ExchangeRatesServlet", value = "/exchangeRates")
 public class ExchangeRatesServlet extends HttpServlet {
@@ -44,15 +44,6 @@ public class ExchangeRatesServlet extends HttpServlet {
             throws ServletException, IOException
     {
         ExchangeRateRequest exchangeRateRequest = new ObjectMapper().readValue(request.getReader(), ExchangeRateRequest.class);
-
-        if (exchangeRateRepository
-                .findByCodes(exchangeRateRequest.getBaseCurrencyCode(), exchangeRateRequest.getTargetCurrencyCode())
-                .isPresent())
-        {
-            response.sendError(HttpServletResponse.SC_CONFLICT,
-                    "Exchange rate with these codes is already present.");
-            return;
-        }
 
         ExchangeRate exchangeRate = ExchangeRate.builder()
                 .baseCurrencyId(currencyRepository.findByCode(exchangeRateRequest.getBaseCurrencyCode())

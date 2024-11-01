@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oli.dto.ExchangeRateResponse;
 import com.oli.entity.Currency;
 import com.oli.entity.ExchangeRate;
-import com.oli.repository.CurrencyRepository;
-import com.oli.repository.ExchangeRateRepository;
+import com.oli.repository.impl.CurrencyRepository;
+import com.oli.repository.impl.ExchangeRateRepository;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -20,7 +20,7 @@ import java.math.RoundingMode;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import static com.oli.repository.ExchangeRateRepository.INVALID_CURRENCY_CODE;
+import static com.oli.repository.impl.ExchangeRateRepository.INVALID_CURRENCY_CODE;
 
 @WebServlet(name = "ExchangeServlet", value = "/exchange")
 public class ExchangeServlet extends HttpServlet {
