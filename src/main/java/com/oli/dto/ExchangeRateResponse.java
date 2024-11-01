@@ -1,6 +1,5 @@
 package com.oli.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.oli.entity.Currency;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

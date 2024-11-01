@@ -37,12 +37,6 @@ public class CurrenciesServlet extends HttpServlet {
 
         Currency currency = new ObjectMapper().readValue(request.getReader(), Currency.class);
 
-        if (currencyRepository.findByCode(currency.getCode()).isPresent()) {
-            response.sendError(HttpServletResponse.SC_CONFLICT,
-                    "Currency with code " + currency.getCode() + " already exists.");
-            return;
-        }
-
         Currency saved = currencyRepository.save(currency);
 
         response.setContentType("application/json");

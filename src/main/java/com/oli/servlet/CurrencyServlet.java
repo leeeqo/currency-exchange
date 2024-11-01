@@ -43,6 +43,7 @@ public class CurrencyServlet extends HttpServlet {
             return;
         }
 
+        response.setContentType("application/json");
         new ObjectMapper().writeValue(response.getWriter(), currency.get());
     }
 }
