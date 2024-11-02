@@ -46,9 +46,9 @@ public class ExchangeRatesServlet extends HttpServlet {
         ExchangeRateRequest exchangeRateRequest = new ObjectMapper().readValue(request.getReader(), ExchangeRateRequest.class);
 
         ExchangeRate exchangeRate = ExchangeRate.builder()
-                .baseCurrencyId(currencyRepository.findByCode(exchangeRateRequest.getBaseCurrencyCode())
+                .baseCurrency(currencyRepository.findByCode(exchangeRateRequest.getBaseCurrencyCode())
                         .orElseThrow(() -> new NoSuchElementException(INVALID_CURRENCY_CODE)))
-                .targetCurrencyId(currencyRepository.findByCode(exchangeRateRequest.getTargetCurrencyCode())
+                .targetCurrency(currencyRepository.findByCode(exchangeRateRequest.getTargetCurrencyCode())
                         .orElseThrow(() -> new NoSuchElementException(INVALID_CURRENCY_CODE)))
                 .rate(exchangeRateRequest.getRate())
                 .build();

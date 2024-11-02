@@ -31,14 +31,14 @@ public class ExchangeRateRepository extends DataSourceRepository implements CruR
     private ExchangeRate fromResultSet(ResultSet resultSet) throws SQLException {
         return ExchangeRate.builder()
                 .id(resultSet.getLong("id"))
-                .baseCurrencyId(Currency.builder()
+                .baseCurrency(Currency.builder()
                         .id(resultSet.getLong("base_id"))
                         .code(resultSet.getString("base_code"))
                         .fullName(resultSet.getString("base_fullname"))
                         .sign(resultSet.getString("base_sign"))
                         .build()
                 )
-                .targetCurrencyId(Currency.builder()
+                .targetCurrency(Currency.builder()
                         .id(resultSet.getLong("target_id"))
                         .code(resultSet.getString("target_code"))
                         .fullName(resultSet.getString("target_fullname"))
@@ -144,8 +144,8 @@ public class ExchangeRateRepository extends DataSourceRepository implements CruR
              PreparedStatement preparedStatement = connection.prepareStatement(query,
                      PreparedStatement.RETURN_GENERATED_KEYS)
         ) {
-            preparedStatement.setLong(1, obj.getBaseCurrencyId().getId());
-            preparedStatement.setLong(2, obj.getTargetCurrencyId().getId());
+            preparedStatement.setLong(1, obj.getBaseCurrency().getId());
+            preparedStatement.setLong(2, obj.getTargetCurrency().getId());
             preparedStatement.setBigDecimal(3, obj.getRate());
 
             int affectedRows = preparedStatement.executeUpdate();

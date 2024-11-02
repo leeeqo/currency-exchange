@@ -2,6 +2,7 @@ package com.oli.listener;
 
 import com.oli.repository.impl.CurrencyRepository;
 import com.oli.repository.impl.ExchangeRateRepository;
+import com.oli.service.ExchangeRateService;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
@@ -26,6 +27,10 @@ public class ContextListener implements ServletContextListener {
 
         context.setAttribute("currencyRepository", currencyRepository);
         context.setAttribute("exchangeRateRepository", exchangeRateRepository);
+
+        ExchangeRateService exchangeRateService = new ExchangeRateService(exchangeRateRepository);
+
+        context.setAttribute("exchangeRateService", exchangeRateService);
     }
 
     private DataSource makeHikariDataSource(ServletContext context) {
