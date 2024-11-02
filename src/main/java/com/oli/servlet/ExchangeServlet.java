@@ -18,11 +18,11 @@ import java.sql.SQLException;
 @WebServlet(name = "ExchangeServlet", value = "/exchange")
 public class ExchangeServlet extends HttpServlet {
 
-    private ExchangeRateService exchangeService;
+    private ExchangeRateService exchangeRateService;
 
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
-        exchangeService = (ExchangeRateService) servletConfig.getServletContext()
+        exchangeRateService = (ExchangeRateService) servletConfig.getServletContext()
                 .getAttribute("exchangeRateService");
     }
 
@@ -36,7 +36,7 @@ public class ExchangeServlet extends HttpServlet {
 
         ExchangeRateResponse exchangeRateResponse = null;
         try {
-            exchangeRateResponse = exchangeService.calculateExchangeRateResponse(from, to, amount);
+            exchangeRateResponse = exchangeRateService.calculateExchangeRateResponse(from, to, amount);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -44,6 +44,4 @@ public class ExchangeServlet extends HttpServlet {
         response.setContentType("application/json");
         new ObjectMapper().writeValue(response.getWriter(), exchangeRateResponse);
     }
-
-
 }

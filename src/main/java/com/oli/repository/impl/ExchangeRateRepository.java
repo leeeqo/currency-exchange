@@ -21,9 +21,6 @@ public class ExchangeRateRepository extends DataSourceRepository implements CruR
     private static final String TARGET_CURRENCY_FIELDS = "c_target.id AS target_id, c_target.code AS target_code, " +
             "c_target.fullname AS target_fullname, c_target.sign AS target_sign";
 
-    public static final String INVALID_CURRENCY_CODE = "Invalid currency code." +
-            "There is no currency with code that is specified for current exchange rate.";
-
     public ExchangeRateRepository(DataSource dataSource) {
         super(dataSource);
     }

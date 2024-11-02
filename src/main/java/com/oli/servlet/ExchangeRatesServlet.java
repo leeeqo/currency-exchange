@@ -3,8 +3,7 @@ package com.oli.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oli.dto.ExchangeRateRequest;
 import com.oli.entity.ExchangeRate;
-import com.oli.repository.impl.CurrencyRepository;
-import com.oli.repository.impl.ExchangeRateRepository;
+import com.oli.service.ExchangeRateService;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,47 +12,47 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.NoSuchElementException;
-
-import static com.oli.repository.impl.ExchangeRateRepository.INVALID_CURRENCY_CODE;
+import java.sql.SQLException;
+import java.util.List;
 
 @WebServlet(name = "ExchangeRatesServlet", value = "/exchangeRates")
 public class ExchangeRatesServlet extends HttpServlet {
 
-    private CurrencyRepository currencyRepository;
-    private ExchangeRateRepository exchangeRateRepository;
+    private ExchangeRateService exchangeRateService;
 
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
-        currencyRepository = (CurrencyRepository) servletConfig.getServletContext()
-                .getAttribute("currencyRepository");
-        exchangeRateRepository = (ExchangeRateRepository) servletConfig.getServletContext()
-                .getAttribute("exchangeRateRepository");
+        exchangeRateService = (ExchangeRateService) servletConfig.getServletContext()
+                .getAttribute("exchangeRateService");
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException
-    {
+            throws ServletException, IOException {
+
+        List<ExchangeRate> exchangeRates = null;
+        try {
+            exchangeRates = exchangeRateService.getAllExchangeRates();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
         response.setContentType("application/json");
-        new ObjectMapper().writeValue(response.getWriter(), exchangeRateRepository.findAll());
+        new ObjectMapper().writeValue(response.getWriter(), exchangeRates);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException
-    {
+            throws ServletException, IOException {
+
         ExchangeRateRequest exchangeRateRequest = new ObjectMapper().readValue(request.getReader(), ExchangeRateRequest.class);
 
-        ExchangeRate exchangeRate = ExchangeRate.builder()
-                .baseCurrency(currencyRepository.findByCode(exchangeRateRequest.getBaseCurrencyCode())
-                        .orElseThrow(() -> new NoSuchElementException(INVALID_CURRENCY_CODE)))
-                .targetCurrency(currencyRepository.findByCode(exchangeRateRequest.getTargetCurrencyCode())
-                        .orElseThrow(() -> new NoSuchElementException(INVALID_CURRENCY_CODE)))
-                .rate(exchangeRateRequest.getRate())
-                .build();
-
-        ExchangeRate saved = exchangeRateRepository.save(exchangeRate);
+        ExchangeRate saved = null;
+        try {
+            saved = exchangeRateService.saveExchangeRate(exchangeRateRequest);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
         response.setContentType("application/json");
         new ObjectMapper().writeValue(response.getWriter(), saved);

@@ -28,7 +28,7 @@ public class ContextListener implements ServletContextListener {
         context.setAttribute("currencyRepository", currencyRepository);
         context.setAttribute("exchangeRateRepository", exchangeRateRepository);
 
-        ExchangeRateService exchangeRateService = new ExchangeRateService(exchangeRateRepository);
+        ExchangeRateService exchangeRateService = new ExchangeRateService(exchangeRateRepository, currencyRepository);
 
         context.setAttribute("exchangeRateService", exchangeRateService);
     }
