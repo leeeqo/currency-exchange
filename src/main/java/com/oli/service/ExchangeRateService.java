@@ -2,9 +2,7 @@ package com.oli.service;
 
 import com.oli.dto.ExchangeRateRequest;
 import com.oli.dto.ExchangeRateResponse;
-import com.oli.entity.Currency;
 import com.oli.entity.ExchangeRate;
-import com.oli.repository.impl.CurrencyRepository;
 import com.oli.repository.impl.ExchangeRateRepository;
 
 import java.math.BigDecimal;
@@ -17,16 +15,12 @@ import java.util.Optional;
 public class ExchangeRateService {
 
     private static final String USD = "USD";
-    private static final String INVALID_CURRENCY_CODE = "Invalid currency code." +
-            "There is no currency with code that is specified for current exchange rate.";
     private static final String NO_EXCHANGE_RATE = "Exchange rate with specified codes was not found.";
 
     private final ExchangeRateRepository exchangeRateRepository;
-    private final CurrencyRepository currencyRepository;
 
-    public ExchangeRateService(ExchangeRateRepository exchangeRateRepository, CurrencyRepository currencyRepository) {
+    public ExchangeRateService(ExchangeRateRepository exchangeRateRepository) {
         this.exchangeRateRepository = exchangeRateRepository;
-        this.currencyRepository = currencyRepository;
     }
 
     public List<ExchangeRate> getAllExchangeRates() throws SQLException {
@@ -55,19 +49,14 @@ public class ExchangeRateService {
         return exchangeRateRepository.update(exchangeRate);
     }
 
+    // Previous solution for saveExchangeRate().
+
+    // Problem: it's not atomic - currencies might be deleted
+    // after we retrieved them using CurrencyRepository
+    // meaning we try to put ExchangeRate with non-existing currencies.
+    /*
     public ExchangeRate saveExchangeRate(ExchangeRateRequest exchangeRateRequest)
             throws NoSuchElementException, SQLException {
-
-        // I am not sure that this is the best way to implement save operation.
-
-        // Problem: it's not atomic - currencies might be deleted
-        // after we retrieved them using CurrencyRepository
-        // meaning we try to put ExchangeRate with non-existing currencies.
-
-        // My solution: adding unique constraint to the database.
-
-        // Possible solution: using ExchangeRateRequest + INSERT query with two SELECT sub-queries.
-        // Disadvantage: using ExchangeRateRequest as the parameter of save() method in repository.
 
         Currency baseCurrency = currencyRepository.findByCode(exchangeRateRequest.getBaseCurrencyCode())
                 .orElseThrow(() -> new NoSuchElementException(INVALID_CURRENCY_CODE));
@@ -81,6 +70,14 @@ public class ExchangeRateService {
                 .build();
 
         return exchangeRateRepository.save(exchangeRate);
+    } */
+
+    // Other solution: using ExchangeRateRequest + INSERT query with two SELECT sub-queries.
+    // Disadvantage (is it?): using DTO ExchangeRateRequest as the parameter of save() method in repository.
+    public ExchangeRate saveExchangeRate(ExchangeRateRequest exchangeRateRequest)
+            throws NoSuchElementException, SQLException {
+
+        return exchangeRateRepository.save(exchangeRateRequest);
     }
 
     public ExchangeRateResponse calculateExchangeRateResponse(String from, String to, BigDecimal amount)

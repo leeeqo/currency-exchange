@@ -1,5 +1,6 @@
 package com.oli.repository.impl;
 
+import com.oli.dto.ExchangeRateRequest;
 import com.oli.entity.Currency;
 import com.oli.entity.ExchangeRate;
 import com.oli.repository.CruRepository;
@@ -127,6 +128,52 @@ public class ExchangeRateRepository extends DataSourceRepository implements CruR
         }
 
         return optional;
+    }
+
+    public ExchangeRate save(ExchangeRateRequest exchangeRateRequest) {
+        String query =
+                "INSERT INTO exchange_rate (base_currency_id, target_currency_id, rate) " +
+                "VALUES (" +
+                    "(SELECT id FROM currency WHERE code = ?), " +
+                    "(SELECT id FROM currency WHERE code = ?), " +
+                    "?" +
+                ")";
+
+        ExchangeRate saved = null;
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query,
+                     PreparedStatement.RETURN_GENERATED_KEYS)
+        ) {
+            preparedStatement.setString(1, exchangeRateRequest.getBaseCurrencyCode());
+            preparedStatement.setString(2, exchangeRateRequest.getTargetCurrencyCode());
+            preparedStatement.setBigDecimal(3, exchangeRateRequest.getRate());
+
+            int affectedRows = preparedStatement.executeUpdate();
+
+            if (affectedRows == 0) {
+                throw new SQLException("Saving exchange rate failed, no rows affected.");
+            }
+
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+
+            if (generatedKeys.next()) {
+                Optional<ExchangeRate> optional = findById(generatedKeys.getLong(1));
+
+                if (optional.isPresent()) {
+                    saved = optional.get();
+                } else {
+                    throw new SQLException("Saving exchange rate failed, no exchange rate with retrieved ID found.");
+                }
+            } else {
+                throw new SQLException("Saving exchange rate failed, no ID generated.");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return saved;
     }
 
     @Override
