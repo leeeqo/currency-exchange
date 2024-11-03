@@ -1,7 +1,6 @@
 package com.oli.servlet;
 
 import com.fasterxml.jackson.core.io.BigDecimalParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oli.dto.ExchangeRateResponse;
 import com.oli.service.ExchangeRateService;
 import jakarta.servlet.ServletConfig;
@@ -14,6 +13,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+
+import static com.oli.utils.JsonUtils.writeJsonToResponse;
 
 @WebServlet(name = "ExchangeServlet", value = "/exchange")
 public class ExchangeServlet extends HttpServlet {
@@ -41,6 +42,6 @@ public class ExchangeServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
-        new ObjectMapper().writeValue(response.getWriter(), exchangeRateResponse);
+        writeJsonToResponse(response, exchangeRateResponse);
     }
 }

@@ -1,6 +1,5 @@
 package com.oli.servlet;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oli.entity.Currency;
 import com.oli.repository.impl.CurrencyRepository;
 import jakarta.servlet.ServletConfig;
@@ -11,6 +10,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.List;
+
+import static com.oli.utils.JsonUtils.readJsonFromRequest;
+import static com.oli.utils.JsonUtils.writeJsonToResponse;
 
 @WebServlet(name = "CurrenciesServlet", value = "/currencies")
 public class CurrenciesServlet extends HttpServlet {
@@ -27,17 +30,19 @@ public class CurrenciesServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        new ObjectMapper().writeValue(response.getWriter(), currencyRepository.findAll());
+        List<Currency> currencies = currencyRepository.findAll();
+
+        writeJsonToResponse(response, currencies);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        Currency currency = new ObjectMapper().readValue(request.getReader(), Currency.class);
+        Currency currency = readJsonFromRequest(request, Currency.class);
 
         Currency saved = currencyRepository.save(currency);
 
-        new ObjectMapper().writeValue(response.getWriter(), saved);
+        writeJsonToResponse(response, saved);
     }
 }

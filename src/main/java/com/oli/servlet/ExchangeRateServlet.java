@@ -1,6 +1,5 @@
 package com.oli.servlet;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oli.dto.ExchangeRateRequest;
 import com.oli.entity.ExchangeRate;
 import com.oli.service.ExchangeRateService;
@@ -13,6 +12,9 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.sql.SQLException;
+
+import static com.oli.utils.JsonUtils.readJsonFromRequest;
+import static com.oli.utils.JsonUtils.writeJsonToResponse;
 
 @WebServlet(name = "ExchangeRateServlet", value = "/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
@@ -44,7 +46,7 @@ public class ExchangeRateServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
-        new ObjectMapper().writeValue(response.getWriter(), exchangeRate);
+        writeJsonToResponse(response, exchangeRate);
     }
 
     @Override
@@ -59,8 +61,7 @@ public class ExchangeRateServlet extends HttpServlet {
         }
         String codes = pathInfo.replaceFirst("/", "").toUpperCase();
 
-        ExchangeRateRequest exchangeRateRequest = new ObjectMapper()
-                .readValue(request.getReader(), ExchangeRateRequest.class);
+        ExchangeRateRequest exchangeRateRequest = readJsonFromRequest(request, ExchangeRateRequest.class);
 
         ExchangeRate updated = null;
         try {
@@ -69,6 +70,6 @@ public class ExchangeRateServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
-        new ObjectMapper().writeValue(response.getWriter(), updated);
+        writeJsonToResponse(response, updated);
     }
 }

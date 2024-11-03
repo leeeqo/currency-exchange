@@ -1,6 +1,5 @@
 package com.oli.servlet;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oli.entity.Currency;
 import com.oli.repository.impl.CurrencyRepository;
 import jakarta.servlet.ServletConfig;
@@ -12,6 +11,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.Optional;
+
+import static com.oli.utils.JsonUtils.writeJsonToResponse;
 
 @WebServlet(name = "CurrencyServlet", value = "/currency/*")
 public class CurrencyServlet extends HttpServlet {
@@ -43,6 +44,6 @@ public class CurrencyServlet extends HttpServlet {
             return;
         }
 
-        new ObjectMapper().writeValue(response.getWriter(), currency.get());
+        writeJsonToResponse(response, currency.get());
     }
 }
