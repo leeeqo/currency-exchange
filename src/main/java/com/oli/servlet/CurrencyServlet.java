@@ -1,7 +1,7 @@
 package com.oli.servlet;
 
 import com.oli.entity.Currency;
-import com.oli.repository.impl.CurrencyRepository;
+import com.oli.service.CurrencyService;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -10,19 +10,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.Optional;
+import java.sql.SQLException;
 
 import static com.oli.utils.JsonUtils.writeJsonToResponse;
 
 @WebServlet(name = "CurrencyServlet", value = "/currency/*")
 public class CurrencyServlet extends HttpServlet {
 
-    private CurrencyRepository currencyRepository;
+    private CurrencyService currencyService;
 
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
-        currencyRepository = (CurrencyRepository) servletConfig.getServletContext()
-                .getAttribute("currencyRepository");
+        currencyService = (CurrencyService) servletConfig.getServletContext()
+                .getAttribute("currencyService");
     }
 
     @Override
@@ -36,14 +36,15 @@ public class CurrencyServlet extends HttpServlet {
             return;
         }
 
-        String code = pathInfo.replaceFirst("/", "").toUpperCase();
-        Optional<Currency> currency = currencyRepository.findByCode(code);
+        String code = pathInfo.replaceFirst("/", "");
 
-        if (currency.isEmpty()) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Currency with code " + code + " wasn't found.");
-            return;
+        Currency currency = null;
+        try {
+            currency = currencyService.getCurrencyByCode(code);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
 
-        writeJsonToResponse(response, currency.get());
+        writeJsonToResponse(response, currency);
     }
 }

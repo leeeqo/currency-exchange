@@ -59,7 +59,7 @@ public class ExchangeRateServlet extends HttpServlet {
                     "Enter exchange rate codes. Ex.: .../exchangeRate/USDEUR");
             return;
         }
-        String codes = pathInfo.replaceFirst("/", "").toUpperCase();
+        String codes = pathInfo.replaceFirst("/", "");
 
         ExchangeRateRequest exchangeRateRequest = readJsonFromRequest(request, ExchangeRateRequest.class);
 
