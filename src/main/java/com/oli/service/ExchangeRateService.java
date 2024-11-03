@@ -58,6 +58,17 @@ public class ExchangeRateService {
     public ExchangeRate saveExchangeRate(ExchangeRateRequest exchangeRateRequest)
             throws NoSuchElementException, SQLException {
 
+        // I am not sure that this is the best way to implement save operation.
+
+        // Problem: it's not atomic - currencies might be deleted
+        // after we retrieved them using CurrencyRepository
+        // meaning we try to put ExchangeRate with non-existing currencies.
+
+        // My solution: adding unique constraint to the database.
+
+        // Possible solution: using ExchangeRateRequest + INSERT query with two SELECT sub-queries.
+        // Disadvantage: using ExchangeRateRequest as the parameter of save() method in repository.
+
         Currency baseCurrency = currencyRepository.findByCode(exchangeRateRequest.getBaseCurrencyCode())
                 .orElseThrow(() -> new NoSuchElementException(INVALID_CURRENCY_CODE));
         Currency targetCurrency = currencyRepository.findByCode(exchangeRateRequest.getTargetCurrencyCode())
