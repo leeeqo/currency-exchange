@@ -44,7 +44,6 @@ public class ExchangeRateServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
-        response.setContentType("application/json");
         new ObjectMapper().writeValue(response.getWriter(), exchangeRate);
     }
 
@@ -70,7 +69,6 @@ public class ExchangeRateServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
-        response.setContentType("application/json");
         new ObjectMapper().writeValue(response.getWriter(), updated);
     }
 }

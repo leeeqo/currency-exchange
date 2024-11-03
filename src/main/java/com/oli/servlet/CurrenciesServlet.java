@@ -27,7 +27,6 @@ public class CurrenciesServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        response.setContentType("application/json");
         new ObjectMapper().writeValue(response.getWriter(), currencyRepository.findAll());
     }
 
@@ -39,7 +38,6 @@ public class CurrenciesServlet extends HttpServlet {
 
         Currency saved = currencyRepository.save(currency);
 
-        response.setContentType("application/json");
         new ObjectMapper().writeValue(response.getWriter(), saved);
     }
 }
