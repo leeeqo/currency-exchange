@@ -51,6 +51,7 @@ public class ExchangeRatesServlet extends HttpServlet {
             handleException(response, e);
         }
 
+        response.setStatus(HttpServletResponse.SC_CREATED);
         writeJsonToResponse(response, saved);
     }
 }
