@@ -6,14 +6,13 @@ Tech Task: https://zhukovsd.github.io/java-backend-learning-course/projects/curr
 
 ### ToDo:
 
-- Service layer
-- Exception handling
-- Tests
+- Replace massive database queries with small ones using JDBC Transactions
 
 ### Stack:
 
 - Jakarta Servlets
 - JDBC
+- Jackson
 - PostgreSQL
 
 ### Endpoints:
