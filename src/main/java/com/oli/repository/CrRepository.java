@@ -3,7 +3,7 @@ package com.oli.repository;
 import java.util.List;
 import java.util.Optional;
 
-public interface CruRepository<T> {
+public interface CrRepository<T> {
 
     List<T> findAll();
 

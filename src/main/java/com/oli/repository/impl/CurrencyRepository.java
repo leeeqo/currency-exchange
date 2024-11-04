@@ -1,7 +1,8 @@
 package com.oli.repository.impl;
 
 import com.oli.entity.Currency;
-import com.oli.repository.CruRepository;
+import com.oli.exception.impl.AlreadyExistsException;
+import com.oli.repository.CrRepository;
 import com.oli.repository.DataSourceRepository;
 
 import javax.sql.DataSource;
@@ -13,7 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CurrencyRepository extends DataSourceRepository implements CruRepository<Currency> {
+public class CurrencyRepository extends DataSourceRepository implements CrRepository<Currency> {
+
+    private static final String UNIQUE_CONSTRAINT_VIOLATION =
+            "violates unique constraint \"currency_code_key\"";
 
     public CurrencyRepository(DataSource dataSource) {
         super(dataSource);
@@ -42,7 +46,7 @@ public class CurrencyRepository extends DataSourceRepository implements CruRepos
                 res.add(fromResultSet(resultSet));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return res;
@@ -52,20 +56,22 @@ public class CurrencyRepository extends DataSourceRepository implements CruRepos
     public Optional<Currency> findById(Long id) {
         String query =
                 "SELECT * FROM currency " +
-                "WHERE id = " + id;
+                "WHERE id = ?";
 
         Optional<Currency> optional = Optional.empty();
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
+            preparedStatement.setLong(1, id);
+
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next()) {
                 optional = Optional.of(fromResultSet(resultSet));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return optional;
@@ -74,20 +80,22 @@ public class CurrencyRepository extends DataSourceRepository implements CruRepos
     public Optional<Currency> findByCode(String code) {
         String query =
                 "SELECT * FROM currency " +
-                "WHERE code = '" + code + "'";
+                "WHERE code = ?";
 
         Optional<Currency> optional = Optional.empty();
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
+            preparedStatement.setString(1, code);
+
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next()) {
                 optional = Optional.of(fromResultSet(resultSet));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return optional;
@@ -112,7 +120,7 @@ public class CurrencyRepository extends DataSourceRepository implements CruRepos
             int affectedRows = preparedStatement.executeUpdate();
 
             if (affectedRows == 0) {
-                throw new SQLException("Saving currency failed, no rows affected.");
+                throw new SQLException();
             }
 
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
@@ -120,17 +128,15 @@ public class CurrencyRepository extends DataSourceRepository implements CruRepos
             if (generatedKeys.next()) {
                 Optional<Currency> optional = findById(generatedKeys.getLong(1));
 
-                if (optional.isPresent()) {
-                    saved = optional.get();
-                } else {
-                    throw new SQLException("Saving currency failed, no currency with retrieved ID found.");
-                }
-            } else {
-                throw new SQLException("Saving currency failed, no ID generated.");
+                saved = optional.orElseThrow(() ->
+                        new SQLException("Saving currency failed, no currency with retrieved ID found."));
+            }
+        } catch (SQLException e) {
+            if (e.getMessage().contains(UNIQUE_CONSTRAINT_VIOLATION)) {
+                throw new AlreadyExistsException("Currency with code \"" + obj.getCode() + "\" already exists.");
             }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return saved;

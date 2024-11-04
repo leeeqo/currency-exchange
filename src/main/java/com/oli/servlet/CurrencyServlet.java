@@ -1,6 +1,7 @@
 package com.oli.servlet;
 
 import com.oli.entity.Currency;
+import com.oli.exception.ApplicationException;
 import com.oli.service.CurrencyService;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
@@ -10,9 +11,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.sql.SQLException;
 
+import static com.oli.exception.ExceptionHandler.handleException;
 import static com.oli.utils.JsonUtils.writeJsonToResponse;
+import static com.oli.utils.RequestUtils.getRequestCurrencyCode;
 
 @WebServlet(name = "CurrencyServlet", value = "/currency/*")
 public class CurrencyServlet extends HttpServlet {
@@ -27,22 +29,15 @@ public class CurrencyServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException
-    {
-        String pathInfo = request.getPathInfo();
-
-        if (pathInfo == null || pathInfo.equals("/")) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Enter currency code. Ex.: .../currency/USD");
-            return;
-        }
-
-        String code = pathInfo.replaceFirst("/", "");
+            throws ServletException, IOException {
 
         Currency currency = null;
         try {
+            String code = getRequestCurrencyCode(request);
+
             currency = currencyService.getCurrencyByCode(code);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch (ApplicationException e) {
+            handleException(response, e);
         }
 
         writeJsonToResponse(response, currency);

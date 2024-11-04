@@ -1,29 +1,28 @@
 package com.oli.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.*;
+import lombok.*;
 
-@Data
+@Getter
 @Builder
-@NoArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
+@AllArgsConstructor
 public class Currency {
 
     private Long id;
     private String code;
-    private String fullName;
     private String sign;
 
-    public Currency(Long id, String code, String fullName, String sign) {
-        this.id = id;
+    @JsonProperty(value = "name")
+    private String fullName;
+
+    @JsonCreator
+    public Currency(@JsonProperty(value = "code", required = true) String code,
+                    @JsonProperty(value = "name", required = true) String fullName,
+                    @JsonProperty(value = "sign", required = true) String sign) {
+
+        this.id = null;
         this.code = code;
         this.fullName = fullName;
         this.sign = sign;
-    }
-
-    public Currency(String code, String fullName, String sign) {
-        this(0L, code, fullName, sign);
     }
 }

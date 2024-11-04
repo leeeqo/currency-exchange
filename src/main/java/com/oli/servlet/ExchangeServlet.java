@@ -1,7 +1,7 @@
 package com.oli.servlet;
 
-import com.fasterxml.jackson.core.io.BigDecimalParser;
-import com.oli.dto.ExchangeRateResponse;
+import com.oli.dto.ConvertedAmount;
+import com.oli.exception.ApplicationException;
 import com.oli.service.ExchangeRateService;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
@@ -11,10 +11,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.SQLException;
+import java.util.List;
 
+import static com.oli.exception.ExceptionHandler.handleException;
 import static com.oli.utils.JsonUtils.writeJsonToResponse;
+import static com.oli.utils.RequestUtils.getRequestExchangeParameters;
 
 @WebServlet(name = "ExchangeServlet", value = "/exchange")
 public class ExchangeServlet extends HttpServlet {
@@ -31,17 +32,15 @@ public class ExchangeServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String from = request.getParameter("from");
-        String to = request.getParameter("to");
-        BigDecimal amount = BigDecimalParser.parse(request.getParameter("amount"));
-
-        ExchangeRateResponse exchangeRateResponse = null;
+        ConvertedAmount convertedAmount = null;
         try {
-            exchangeRateResponse = exchangeRateService.calculateExchangeRateResponse(from, to, amount);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            List<Object> parameters = getRequestExchangeParameters(request);
+
+            convertedAmount = exchangeRateService.calculateExchangeRateResponse(parameters);
+        } catch (ApplicationException e) {
+            handleException(response, e);
         }
 
-        writeJsonToResponse(response, exchangeRateResponse);
+        writeJsonToResponse(response, convertedAmount);
     }
 }

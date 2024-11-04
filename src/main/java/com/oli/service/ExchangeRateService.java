@@ -1,21 +1,21 @@
 package com.oli.service;
 
-import com.oli.dto.ExchangeRateRequest;
-import com.oli.dto.ExchangeRateResponse;
+import com.oli.dto.ConvertedAmount;
+import com.oli.dto.ExchangeRateWithCodes;
+import com.oli.dto.ExchangeRateWithoutCodes;
+import com.oli.entity.Currency;
 import com.oli.entity.ExchangeRate;
+import com.oli.exception.impl.NotFoundException;
 import com.oli.repository.impl.ExchangeRateRepository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.sql.SQLException;
 import java.util.Optional;
 
 public class ExchangeRateService {
 
     private static final String USD = "USD";
-    private static final String NO_EXCHANGE_RATE = "Exchange rate with specified codes was not found.";
 
     private final ExchangeRateRepository exchangeRateRepository;
 
@@ -23,74 +23,63 @@ public class ExchangeRateService {
         this.exchangeRateRepository = exchangeRateRepository;
     }
 
-    public List<ExchangeRate> getAllExchangeRates() throws SQLException {
+    public List<ExchangeRate> getAllExchangeRates() {
         return exchangeRateRepository.findAll();
     }
 
-    public ExchangeRate getExchangeRateByCodes(String codes) throws NoSuchElementException, SQLException {
-        String baseCode = codes.substring(0, 3).toUpperCase();
-        String targetCode = codes.substring(3, 6).toUpperCase();
+    public ExchangeRate getExchangeRateByCodes(List<String> codes) {
+        String baseCode = codes.get(0);
+        String targetCode = codes.get(1);
 
         return exchangeRateRepository.findByCodes(baseCode, targetCode)
-                .orElseThrow(() -> new NoSuchElementException(NO_EXCHANGE_RATE));
+                .orElseThrow(() -> new NotFoundException(
+                        "Exchange rate from " + baseCode + " to " + targetCode + " was not found."));
     }
 
-    public ExchangeRate updateExchangeRate(ExchangeRateRequest request, String codes)
-            throws NoSuchElementException, SQLException {
+    public ExchangeRate updateExchangeRate(ExchangeRateWithoutCodes exchangeRateWithoutCodes, List<String> codes) {
+        String baseCode = codes.get(0);
+        String targetCode = codes.get(1);
 
-        String baseCode = codes.substring(0, 3).toUpperCase();
-        String targetCode = codes.substring(3, 6).toUpperCase();
-
-        ExchangeRate exchangeRate = exchangeRateRepository.findByCodes(baseCode, targetCode)
-                .orElseThrow(() -> new NoSuchElementException(NO_EXCHANGE_RATE));
-
-        exchangeRate.setRate(request.getRate());
+        ExchangeRate exchangeRate = ExchangeRate.builder()
+                .baseCurrency(Currency.builder()
+                        .code(baseCode)
+                        .build())
+                .targetCurrency(Currency.builder()
+                        .code(targetCode)
+                        .build())
+                .rate(exchangeRateWithoutCodes.getRate())
+                .build();
 
         return exchangeRateRepository.update(exchangeRate);
     }
 
-    // Previous solution for saveExchangeRate().
-
-    // Problem: it's not atomic - currencies might be deleted
-    // after we retrieved them using CurrencyRepository
-    // meaning we try to put ExchangeRate with non-existing currencies.
-    /*
-    public ExchangeRate saveExchangeRate(ExchangeRateRequest exchangeRateRequest)
-            throws NoSuchElementException, SQLException {
-
-        Currency baseCurrency = currencyRepository.findByCode(exchangeRateRequest.getBaseCurrencyCode())
-                .orElseThrow(() -> new NoSuchElementException(INVALID_CURRENCY_CODE));
-        Currency targetCurrency = currencyRepository.findByCode(exchangeRateRequest.getTargetCurrencyCode())
-                .orElseThrow(() -> new NoSuchElementException(INVALID_CURRENCY_CODE));
-
+    public ExchangeRate saveExchangeRate(ExchangeRateWithCodes exchangeRateWithCodes) {
         ExchangeRate exchangeRate = ExchangeRate.builder()
-                .baseCurrency(baseCurrency)
-                .targetCurrency(targetCurrency)
-                .rate(exchangeRateRequest.getRate())
+                .baseCurrency(Currency.builder()
+                        .code(exchangeRateWithCodes.getBaseCurrencyCode())
+                        .build())
+                .targetCurrency(Currency.builder()
+                        .code(exchangeRateWithCodes.getTargetCurrencyCode())
+                        .build())
+                .rate(exchangeRateWithCodes.getRate())
                 .build();
 
         return exchangeRateRepository.save(exchangeRate);
-    } */
-
-    // Other solution: using ExchangeRateRequest + INSERT query with two SELECT sub-queries.
-    // Disadvantage (is it?): using DTO ExchangeRateRequest as the parameter of save() method in repository.
-    public ExchangeRate saveExchangeRate(ExchangeRateRequest exchangeRateRequest)
-            throws NoSuchElementException, SQLException {
-
-        return exchangeRateRepository.save(exchangeRateRequest);
     }
 
-    public ExchangeRateResponse calculateExchangeRateResponse(String from, String to, BigDecimal amount)
-            throws NoSuchElementException, SQLException {
+    public ConvertedAmount calculateExchangeRateResponse(List<Object> parameters) {
+        String from = (String) parameters.get(0);
+        String to = (String) parameters.get(1);
+        BigDecimal amount = (BigDecimal) parameters.get(2);
 
         Optional<ExchangeRate> exchangeRate = exchangeRateRepository.findByCodes(from, to);
 
         if (exchangeRate.isPresent()) {
             BigDecimal rate = exchangeRate.get().getRate();
 
-            BigDecimal convertedAmount = amount.multiply(rate);
+            BigDecimal convertedAmount = amount.multiply(rate).setScale(2, RoundingMode.HALF_UP);
 
-            return ExchangeRateResponse.builder()
+            return ConvertedAmount.builder()
                     .baseCurrency(exchangeRate.get().getBaseCurrency())
                     .targetCurrency(exchangeRate.get().getTargetCurrency())
                     .rate(rate)
@@ -104,9 +93,9 @@ public class ExchangeRateService {
         if (exchangeRateInverted.isPresent()) {
             BigDecimal rate = new BigDecimal(1).divide(exchangeRateInverted.get().getRate(), 2, RoundingMode.HALF_UP);
 
-            BigDecimal convertedAmount = amount.multiply(rate);
+            BigDecimal convertedAmount = amount.multiply(rate).setScale(2, RoundingMode.HALF_UP);
 
-            return ExchangeRateResponse.builder()
+            return ConvertedAmount.builder()
                     .baseCurrency(exchangeRateInverted.get().getTargetCurrency())
                     .targetCurrency(exchangeRateInverted.get().getBaseCurrency())
                     .rate(rate)
@@ -124,9 +113,9 @@ public class ExchangeRateService {
 
             BigDecimal rate = rateUSDtoSecond.divide(rateUSDtoFirst, 2, RoundingMode.HALF_UP);
 
-            BigDecimal convertedAmount = amount.multiply(rate);
+            BigDecimal convertedAmount = amount.multiply(rate).setScale(2, RoundingMode.HALF_UP);
 
-            return ExchangeRateResponse.builder()
+            return ConvertedAmount.builder()
                     .baseCurrency(exchangeRateUSDToFirst.get().getTargetCurrency())
                     .targetCurrency(exchangeRateUSDToSecond.get().getTargetCurrency())
                     .rate(rate)
@@ -135,7 +124,6 @@ public class ExchangeRateService {
                     .build();
         }
 
-        throw new NoSuchElementException("Not enough information about exchange rates. " +
-                "Converted amount can not be calculated.");
+        throw new NotFoundException("Not enough information about exchange rates. Choose other currencies.");
     }
 }

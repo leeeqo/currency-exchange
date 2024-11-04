@@ -1,16 +1,13 @@
 package com.oli.service;
 
 import com.oli.entity.Currency;
+import com.oli.exception.impl.AlreadyExistsException;
+import com.oli.exception.impl.NotFoundException;
 import com.oli.repository.impl.CurrencyRepository;
-import com.oli.repository.impl.ExchangeRateRepository;
 
-import java.sql.SQLException;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 public class CurrencyService {
-
-    private static final String NO_CURRENCY = "Currency with specified code was not found.";
 
     private final CurrencyRepository currencyRepository;
 
@@ -18,16 +15,17 @@ public class CurrencyService {
         this.currencyRepository = currencyRepository;
     }
 
-    public List<Currency> getAllCurrencies() throws SQLException {
+    public List<Currency> getAllCurrencies() {
         return currencyRepository.findAll();
     }
 
-    public Currency getCurrencyByCode(String code) throws SQLException {
+    public Currency getCurrencyByCode(String code) throws NotFoundException {
         return currencyRepository.findByCode(code)
-                .orElseThrow(() -> new NoSuchElementException(NO_CURRENCY));
+                .orElseThrow(() -> new NotFoundException(
+                        "Currency with code " + code + " was not found."));
     }
 
-    public Currency saveCurrency(Currency currency) throws SQLException {
+    public Currency saveCurrency(Currency currency) throws AlreadyExistsException {
         return currencyRepository.save(currency);
     }
 }

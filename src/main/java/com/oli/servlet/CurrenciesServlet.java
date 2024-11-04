@@ -1,6 +1,7 @@
 package com.oli.servlet;
 
 import com.oli.entity.Currency;
+import com.oli.exception.ApplicationException;
 import com.oli.service.CurrencyService;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
@@ -10,9 +11,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
+import static com.oli.exception.ExceptionHandler.handleException;
 import static com.oli.utils.JsonUtils.readJsonFromRequest;
 import static com.oli.utils.JsonUtils.writeJsonToResponse;
 
@@ -31,12 +32,7 @@ public class CurrenciesServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        List<Currency> currencies = null;
-        try {
-            currencies = currencyService.getAllCurrencies();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        List<Currency> currencies = currencyService.getAllCurrencies();
 
         writeJsonToResponse(response, currencies);
     }
@@ -45,13 +41,13 @@ public class CurrenciesServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        Currency currency = readJsonFromRequest(request, Currency.class);
-
         Currency saved = null;
         try {
+            Currency currency = readJsonFromRequest(request, Currency.class);
+
             saved = currencyService.saveCurrency(currency);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch (ApplicationException e) {
+            handleException(response, e);
         }
 
         writeJsonToResponse(response, saved);
