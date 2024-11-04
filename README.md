@@ -4,10 +4,6 @@ REST API for describing currencies and exchange rates.
 
 Tech Task: https://zhukovsd.github.io/java-backend-learning-course/projects/currency-exchange/
 
-### ToDo:
-
-- Replace massive database queries with small ones using JDBC Transactions
-
 ### Stack:
 
 - Jakarta Servlets
